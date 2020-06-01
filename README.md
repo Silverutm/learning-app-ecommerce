@@ -20,7 +20,7 @@ sudo systemctl enable firewalld
 
 ```
 sudo yum install mariadb-server
-sudo vi /etc/my.cnf
+sudo nano /etc/my.cnf (in case you wanna change port or something else
 sudo service mariadb start
 sudo systemctl enable mariadb
 ```
