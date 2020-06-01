@@ -47,7 +47,7 @@ MariaDB > FLUSH PRIVILEGES;
 4. Load Product Inventory Information to database
 
 ```
-mysql < db-load-script.sql
+mysql < db-load-script.sql  (it is found in the assets dir)
 ```
 
 
