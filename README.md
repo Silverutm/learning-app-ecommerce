@@ -4,6 +4,11 @@ This is a sample e-commerce application built for learning purposes.
 
 Here's how to deploy it on CentOS systems:
 
+## You as well may run de playbook
+```
+ansible-playbook playbook -i inventory.txt
+```
+
 ## Deploy Pre-Requisites
 
 1. Install FirewallD
