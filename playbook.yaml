@@ -1,0 +1,110 @@
+- name: Prepare firewall
+  hosts: web
+  tasks:
+    - name: install firewall
+      yum:
+        name: firewalld
+        state: present
+    - name: enable firewall
+      service:
+        name: firewalld
+        state: started
+        enabled: yes
+
+- name: Prepare sql
+  hosts: db
+  tasks:
+    - name: install sql
+      yum:
+        name: mariadb-server
+        state: present
+    - name: enable maria
+      service:
+        name: mariadb
+        state: started
+        enabled: yes
+    - name: database port firewall
+      firewalld:
+        port: 3306/tcp
+        zone: public
+        permanent: yes
+        state: enabled
+        immediate: yes  #reload
+
+- name: populate db
+  hosts: db
+  tasks: 
+    - name: install pip prro
+      easy_install:
+        name: pip
+    - name: Install the MySQL-python through pip
+      pip:
+        name: PyMySQL
+    - name: create db
+      mysql_db:
+        name: ecomdb
+        state: present
+    - name: create user
+      mysql_user:
+        name: ecomuser
+        password: ecompassword
+        priv: '*.*:ALL'
+        state: present
+    - name: copy seed
+      copy:
+        src: db_seed.sql
+        dest: db_seed.sql
+    #- name: run seed
+    #  command: mysql < db_seed.sql
+    - name: Import file.sql 
+      mysql_db:
+        state: import
+        name: all
+        target: db_seed.sql
+
+- name: configure web
+  hosts: web
+  tasks:
+    - name: instal php
+      yum:
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - httpd
+          - php
+          - php-mysql
+    - name: web port firewall
+      firewalld:
+        port: 80/tcp
+        zone: public
+        permanent: yes
+        state: enabled
+        immediate: yes #reload
+    - name: change html to php
+      replace:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: 'DirectoryIndex index.html'
+        replace: 'DirectoryIndex index.php'
+    - name: start httpd
+      service:
+          name: httpd
+          state: started
+          enabled: yes
+- name: deploy web
+  hosts: web
+  tasks:
+    - name: instal git
+      yum:
+        name: git
+        state: present
+    - name: clone repo
+      git:
+        repo: https://github.com/kodekloudhub/learning-app-ecommerce.git
+        dest: /var/www/html/
+        update: yes
+    - name: string connection
+      replace:
+        path: /var/www/html/index.php
+        regexp: '172\.20\.1\.101'
+        replace: 'localhost'
